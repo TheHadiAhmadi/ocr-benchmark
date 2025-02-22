@@ -1,0 +1,1 @@
+for each image, create a json file and paste boxes generated using roboflow.com site
