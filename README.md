@@ -1,9 +1,13 @@
 # Ocr benchmarks
 
+## Similar benchmark:
+https://rrc.cvc.uab.es/?ch=2&com=evaluation&task=1
+
 ## Download EAST model
 to download east model you should run
 ```
-wget https://raw.githubusercontent.com/oyyd/frozen_east_text_detection.pb/refs/heads/master/frozen_east_text_detection.pb segmentation-benchmark/dataset/frozen_east_text_detection.pb
+wget https://raw.githubusercontent.com/oyyd/frozen_east_text_detection.pb/refs/heads/master/frozen_east_text_detection.pb
+ mv frozen_east_text_detection.pb segmentation-benchmark/dataset/
 ```
 
 ## Python version
@@ -14,7 +18,8 @@ conda create --name ocr_env python=3.12.9
 conda activate ocr_env
 
 conda install -c pytorch torch torchvision
-conda install -c conda-forge opencv numpy pillow easyocr paddleocr pytesseract scikit-learn
+conda install -c conda-forge opencv numpy pillow easyocr pytesseract scikit-learn 
+pip install paddlepaddle paddleocr
 
 conda create --name ocr_east_env python=3.10.16
 conda activate ocr_east_env
