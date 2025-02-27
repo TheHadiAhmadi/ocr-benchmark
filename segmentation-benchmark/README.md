@@ -1,4 +1,4 @@
-# Ocr benchmarks
+# Text segmentation benchmarks
 
 ## Similar benchmark:
 https://rrc.cvc.uab.es/?ch=2&com=evaluation&task=1

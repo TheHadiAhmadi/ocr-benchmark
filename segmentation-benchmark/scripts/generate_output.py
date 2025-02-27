@@ -22,7 +22,7 @@ def generate_html(metrics):
         </style>
     </head>
     <body>
-        <h1>Text Detectors Comparison</h1>
+        <h1>Text Segmentation Comparison</h1>
         <table>
             <tr>
                 <th>Tool Name</th>
@@ -34,8 +34,10 @@ def generate_html(metrics):
                 <th>More</th>
             </tr>
     """
-    
-    for tool_name, data in metrics.items():
+
+    sorted_tools = dict(sorted(metrics.items(), key=lambda item: item[1]['avg_f1_score'], reverse=True))
+
+    for tool_name, data in sorted_tools.items():
         html_content += f"""
             <tr>
                 <td>{tool_name}</td>

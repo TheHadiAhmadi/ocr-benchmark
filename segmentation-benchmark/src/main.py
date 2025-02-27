@@ -4,7 +4,7 @@ import json
 from tools.tesseract_detector import TesseractDetector
 from tools.easyocr_detector import EasyocrDetector
 from tools.paddle_detector import PaddleDetector
-from tools.utilities import load_dataset, run_benchmarks
+from tools.utilities import load_dataset, run_benchmarks, save_benchmark
 
 # load coco file
 

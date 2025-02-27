@@ -23,37 +23,58 @@ def generate_html(metrics):
         </style>
     </head>
     <body>
-        <h1>OCR Comparison</h1>
+        <h1>Text Recognition Benchmark</h1>
         <table>
             <tr>
                 <th>Tool Name</th>
-                <th>Average Processing Time (s)</th>
                 <th>Average CER</th>
                 <th>Average WER</th>
-                <th>Average CER (num)</th>
-                <th>Average WER (num)</th>
+                <th>Average Processing Time (s)</th>
                 <th>More</th>
             </tr>
     """
-    
-    for tool_name, data in metrics.items():
+    sorted_tools = dict(sorted(metrics.items(), key=lambda item: item[1]['avg_cer_text'], reverse=False))
+
+    for tool_name, data in sorted_tools.items():
         html_content += f"""
             <tr>
                 <td>{tool_name}</td>
-                <td>{data['avg_processing_time']:.2f}</td>
                 <td>{data['avg_cer_text']:.2f}</td>
                 <td>{data['avg_wer_text']:.2f}</td>
-                <td>{data['avg_cer_number']:.2f}</td>
-                <td>{data['avg_wer_number']:.2f}</td>
+                <td>{data['avg_processing_time']:.2f}</td>
                 <td><a href="./{tool_name}-metrics.html">More...</a></td>
             </tr>
         """
     html_content += """
         </table>
+        <br>
+        <h1>Number Recognition Benchmark</h1>
+        <table>
+            <tr>
+                <th>Tool Name</th>
+                <th>Average CER</th>
+                <th>Average WER</th>
+                <th>Average Processing Time (s)</th>
+                <th>More</th>
+            </tr>
+    """
+    sorted_tools = dict(sorted(metrics.items(), key=lambda item: item[1]['avg_cer_number'], reverse=False))
+    for tool_name, data in sorted_tools.items():
+        html_content += f"""
+            <tr>
+                <td>{tool_name}</td>
+                <td>{data['avg_cer_number']:.2f}</td>
+                <td>{data['avg_wer_number']:.2f}</td>
+                <td>{data['avg_processing_time']:.2f}</td>
+                <td><a href="./{tool_name}-metrics.html">More...</a></td>
+            </tr>
+        """
+
+    html_content += """
+</table>
     </body>
     </html>
-    """
-    
+"""
     return html_content
 
 
@@ -77,29 +98,60 @@ def generate_html_images(metrics):
         """
         html_content += f"""
         <body>
-            <h1>{tool_name} Text Detectors Comparison</h1>
+            <h1>{tool_name} | Text Recognition</h1>
             <table>
                 <tr>
                     <th>Image</th>
                     <th>Expected</th>
                     <th>Recognized</th>
-                    <th>Processing Time (s)</th>
                     <th>CER</th>
                     <th>WER</th>
+                    <th>Processing Time (s)</th>
                 </tr>
         """
 
-        for image_id, data in metrics[tool_name]["images"].items():
+        sorted_tools = dict(sorted([(image_id, data) for image_id, data in metrics[tool_name]["images"].items() if not image_id.startswith('t')], key=lambda item: item[1]['cer'], reverse=False))
+
+        for image_id, data in sorted_tools.items():
             html_content += f"""
                 <tr>
                     <td><img src="images/{image_id}.png" height="32"></td>
                     <td>{data['text']}</td>
                     <td>{data['recognized']}</td>
-                    <td>{data['processing_time']:.2f}</td>
                     <td>{data['cer']:.2f}</td>
                     <td>{data['wer']:.2f}</td>
+                    <td>{data['processing_time']:.2f}</td>
                 </tr>
             """
+        html_content += f"""
+            </table>
+            <br>
+            <h1>{tool_name} | Number Recognition</h1>
+            <table>
+                <tr>
+                    <th>Image</th>
+                    <th>Expected</th>
+                    <th>Recognized</th>
+                    <th>CER</th>
+                    <th>WER</th>
+                    <th>Processing Time (s)</th>
+                </tr>
+        """
+
+        sorted_tools = dict(sorted([(image_id, data) for image_id, data in metrics[tool_name]["images"].items() if not image_id.startswith('n')], key=lambda item: item[1]['cer'], reverse=False))
+
+        for image_id, data in sorted_tools.items():
+            html_content += f"""
+                <tr>
+                    <td><img src="images/{image_id}.png" height="32"></td>
+                    <td>{data['text']}</td>
+                    <td>{data['recognized']}</td>
+                    <td>{data['cer']:.2f}</td>
+                    <td>{data['wer']:.2f}</td>
+                    <td>{data['processing_time']:.2f}</td>
+                </tr>
+            """
+
         html_content += """
             </table>
         </body>
@@ -108,32 +160,6 @@ def generate_html_images(metrics):
 
         with(open('./recognition-benchmark/output/' + tool_name + '-metrics.html', 'w') as f):
             f.write(html_content)
-    
-    # return html_content
-
-
-    # <tr>
-    #     <td colspan="6">
-    #         <h3>Images:</h3>
-
-# for image_id, image_data in data['images'].items():
-#     html_content += f"""
-#         <a href="#img_{tool_name}_{image_id}">
-#             Image {image_id}
-#         </a>
-#         <div id="img_{tool_name}_{image_id}">
-#             <img src="{image_id}.jpg" alt="Image {image_id} from {tool_name}">
-#             <div>
-#                 <strong>Processing Time:</strong> {image_data['processing_time']:.2f}s<br>
-#                 <strong>IOU Average:</strong> {image_data['iou_avg']:.2f}<br>
-#                 <strong>Precision:</strong> {image_data['precision']:.2f}<br>
-#                 <strong>Recall:</strong> {image_data['recall']:.2f}<br>
-#                 <strong>F1 Score:</strong> {image_data['f1_score']:.2f}<br>
-#             </div>
-#         </div>
-#     """
-
-# html_content += "</td></tr>"
 
 
 def save_html(html, output_filename):
@@ -143,8 +169,8 @@ def save_html(html, output_filename):
 def main():
     metrics_file = 'recognition-benchmark/output/metrics.json'
     output_html_file = 'recognition-benchmark/output/metrics_comparison.html'
-    
-    metrics = load_metrics(metrics_file)    
+
+    metrics = load_metrics(metrics_file)
     html = generate_html(metrics)
     generate_html_images(metrics)
     save_html(html, output_html_file)
@@ -153,41 +179,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# # Write script to load metrics.json file and generate html file based on the data (simple table) metrics has this structure:
-
-# there are multiple files. create table to compare different text detectors.
-# it should have these columns (tool name/image, processing time, iou average, precision, recall, f1 score) below of each tool show images and metrics, then next tool with it's image....
-
-# { "tesseract": { "avg_processing_time": 20.749979066848756, "avg_iou": 0.2301887434617711, "avg_precision": 1.0, "avg_recall": 0.1881091105349086, "avg_f1_score": 0.2984240652639676, "images": {
-#       "1": {
-#         "processing_time": 8.909185886383057,
-#         "iou_scores": [],
-#         "iou_avg": 0.28235506492162277,
-#         "precision": 1.0,
-#         "recall": 0.16666666666666666,
-#         "f1_score": 0.2857142857142857
-#       },
-#     ...
-#     }
-#   },
-#   "another_tesseract": {
-#     "avg_processing_time": 15.275244736671448,
-#     "avg_iou": 0.2301887434617711,
-#     "avg_precision": 1.0,
-#     "avg_recall": 0.1881091105349086,
-#     "avg_f1_score": 0.2984240652639676,
-#     "images": {
-#       "1": {
-#         "processing_time": 11.773192405700684,
-#         "iou_scores": [],
-#         "iou_avg": 0.28235506492162277,
-#         "precision": 1.0,
-#         " recall": 0.16666666666666666,
-#         "f1_score": 0.2857142857142857
-#       },
-#         ...
-#     }
-#   }
-# }
 
